@@ -54,7 +54,8 @@ struct ContentView: View {
                 HomeTabView(
                     mysteryToday: mysteryToday,
                     onPlayComplete: { isResponsorial in
-                        viewModel.isResponsorial = isResponsorial
+                        let savedMode = UserDefaults.standard.string(forKey: "prayerMode") ?? "complete"
+                        viewModel.isResponsorial = (savedMode == "responsorial")
                         viewModel.startRosario()
                         selectedTab = 1
                     }
@@ -104,10 +105,10 @@ struct HomeTabView: View {
     var body: some View {
         NavigationStack {
             ScrollView { // ScrollView añadido para pantallas pequeñas
-                VStack(spacing: 24) {
+                VStack(spacing: 15) {
                     // Header
-                    VStack(spacing: 12) {
-                        Text("Hoy es")
+                    VStack(spacing: 10) {
+                        Text("Hoy se rezan los misterios")
                             .font(.caption)
                             .foregroundColor(.brown)
                         
@@ -126,7 +127,7 @@ struct HomeTabView: View {
                     .cornerRadius(12)
                     
                     // Lista de misterios
-                    VStack(spacing: 12) {
+                    VStack(spacing: 5) {
                         let mysteries = getMysteries(for: mysteryToday)
                         ForEach(mysteries) { mystery in
                             HStack {
@@ -134,7 +135,7 @@ struct HomeTabView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.brown)
                                 
-                                VStack(alignment: .leading, spacing: 4) {
+                                VStack(alignment: .leading, spacing: 3) {
                                     Text(mystery.title)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.brown)
@@ -151,38 +152,28 @@ struct HomeTabView: View {
                         }
                     }
                     
-                    Spacer(minLength: 20)
-                    
-                    // Botones de acción
-                    VStack(spacing: 12) {
-                        Button(action: { onPlayComplete(false) }) {
-                            HStack {
-                                Image(systemName: "play.fill")
-                                Text("Modo Completo")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 0.62, green: 0.42, blue: 0.25))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
+                    Spacer(minLength: 5)
+                                        
+                    // Botón de acción único - Empezar
+                    Button(action: {
+                        let prayerMode = UserDefaults.standard.string(forKey: "prayerMode") ?? "complete"
+                        let isResponsorial = prayerMode == "responsorial"
+                        onPlayComplete(isResponsorial)
+                    }) {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text("Empezar Santo Rosario")
                         }
-                        
-                        Button(action: { onPlayComplete(true) }) {
-                            HStack {
-                                Image(systemName: "waveform.circle")
-                                Text("Modo Responsorial")
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color(red: 0.72, green: 0.52, blue: 0.35))
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(red: 0.62, green: 0.42, blue: 0.25))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                     }
                 }
                 .padding()
             }
-            .navigationTitle("Rosario")
+            .navigationTitle("Santo Rosario")
         }
     }
 }
@@ -269,31 +260,6 @@ struct PlayerView: View {
                         }
                     }
                     .padding()
-                    
-                    // Toggles
-                    HStack(spacing: 20) {
-                        Toggle("Responsorial", isOn: $viewModel.isResponsorial)
-                            .toggleStyle(.switch)
-                            .tint(Color(red: 0.62, green: 0.42, blue: 0.25))
-                            .labelsHidden()
-                        Text("Responsorial")
-                            .font(.caption)
-                            .foregroundColor(.brown)
-                        
-                        if viewModel.isResponsorial {
-                            Spacer().frame(width: 20)
-                            Toggle("Voz responde", isOn: $viewModel.voiceResponds)
-                                .toggleStyle(.switch)
-                                .tint(Color(red: 0.62, green: 0.42, blue: 0.25))
-                                .labelsHidden()
-                            Text("Voz Auto")
-                                .font(.caption)
-                                .foregroundColor(.brown)
-                        }
-                    }
-                    .padding()
-                    .background(Color.white.opacity(0.4))
-                    .cornerRadius(20)
                 }
                 .padding(.bottom, 30)
             }
@@ -455,10 +421,18 @@ struct RosaryBeadProgress: View {
 struct SettingsView: View {
     @AppStorage("voiceGender") var voiceGender: String = "female"
     @AppStorage("enableVibration") var enableVibration: Bool = true
+    @AppStorage("prayerMode") var prayerMode: String = "complete"
     
     var body: some View {
         NavigationStack {
             Form {
+                Section("Modo de Oración") {
+                    Picker("Tipo de oración", selection: $prayerMode) {
+                        Text("Modo Completo").tag("complete")
+                        Text("Modo Responsorial").tag("responsorial")
+                    }
+                }
+                
                 Section("Voz") {
                     Picker("Género de voz", selection: $voiceGender) {
                         Text("Masculina").tag("male")

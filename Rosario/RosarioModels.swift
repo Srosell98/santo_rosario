@@ -172,35 +172,35 @@ struct AppSettings: Codable {
 // MARK: - Mystery Data
 
 let mysteriesJoyful: [Mystery] = [
-    Mystery(number: 1, title: "Anunciación", description: "Anunciación del Ángel Gabriel a María", group: .joyful),
-    Mystery(number: 2, title: "Visitación", description: "Visitación de María a su prima Isabel", group: .joyful),
-    Mystery(number: 3, title: "Nacimiento", description: "Nacimiento de Nuestro Señor Jesucristo", group: .joyful),
-    Mystery(number: 4, title: "Presentación", description: "Presentación de Jesús en el Templo", group: .joyful),
-    Mystery(number: 5, title: "Hallazgo", description: "Hallazgo del Niño Jesús en el Templo", group: .joyful)
+    Mystery(number: 1, title: "La Anunciación", description: "Anunciación del Ángel Gabriel a María", group: .joyful),
+    Mystery(number: 2, title: "La Visitación", description: "Visitación de María a su prima Isabel", group: .joyful),
+    Mystery(number: 3, title: "El Nacimiento", description: "Nacimiento de Nuestro Señor Jesucristo", group: .joyful),
+    Mystery(number: 4, title: "La Presentación", description: "Presentación de Jesús en el Templo", group: .joyful),
+    Mystery(number: 5, title: "El Hallazgo", description: "El Niño Jesús perdido y hallado en el Templo", group: .joyful)
 ]
 
 let mysteriesSorrowful: [Mystery] = [
-    Mystery(number: 1, title: "Oración en el Huerto", description: "Oración de Jesús en el Huerto", group: .sorrowful),
-    Mystery(number: 2, title: "Azotamiento", description: "Azotamiento de Nuestro Señor Jesucristo", group: .sorrowful),
-    Mystery(number: 3, title: "Coronación de Espinas", description: "Coronación de espinas", group: .sorrowful),
-    Mystery(number: 4, title: "Camino del Calvario", description: "Camino del Calvario", group: .sorrowful),
-    Mystery(number: 5, title: "Crucifixión", description: "Crucifixión y muerte de Nuestro Señor Jesucristo", group: .sorrowful)
+    Mystery(number: 1, title: "La Oración en el Huerto", description: "Oración de Jesús en el Huerto", group: .sorrowful),
+    Mystery(number: 2, title: "La flagelación", description: "La flagelación de Nuestro Señor", group: .sorrowful),
+    Mystery(number: 3, title: "La Coronación de Espinas", description: "La Coronación de espinas", group: .sorrowful),
+    Mystery(number: 4, title: "Camino del Calvario", description: "Jesús carga con la cruz a cuestas", group: .sorrowful),
+    Mystery(number: 5, title: "La Crucifixión", description: "Crucifixión y muerte de Nuestro Señor ", group: .sorrowful)
 ]
 
 let mysteriesGlorious: [Mystery] = [
-    Mystery(number: 1, title: "Resurrección", description: "Resurrección de Nuestro Señor Jesucristo", group: .glorious),
-    Mystery(number: 2, title: "Ascensión", description: "Ascensión de Nuestro Señor Jesucristo", group: .glorious),
+    Mystery(number: 1, title: "La Resurrección", description: "Resurrección de Nuestro Señor Jesucristo", group: .glorious),
+    Mystery(number: 2, title: "La Ascensión", description: "Ascensión de Nuestro Señor Jesucristo", group: .glorious),
     Mystery(number: 3, title: "Venida del Espíritu Santo", description: "Venida del Espíritu Santo", group: .glorious),
-    Mystery(number: 4, title: "Asunción", description: "Asunción de Nuestra Señora María", group: .glorious),
-    Mystery(number: 5, title: "Coronación", description: "Coronación de Nuestra Señora María", group: .glorious)
+    Mystery(number: 4, title: "La Asunción", description: "Asunción de Nuestra Señora María", group: .glorious),
+    Mystery(number: 5, title: "La Coronación", description: "Coronación de Nuestra Señora María", group: .glorious)
 ]
 
 let mysteriesLuminous: [Mystery] = [
-    Mystery(number: 1, title: "Bautismo", description: "Bautismo de Jesús en el Jordán", group: .luminous),
-    Mystery(number: 2, title: "Bodas de Caná", description: "Milagro de Caná", group: .luminous),
-    Mystery(number: 3, title: "Predicación", description: "Predicación de Jesús y su llamada al arrepentimiento", group: .luminous),
-    Mystery(number: 4, title: "Transfiguración", description: "Transfiguración de Jesús", group: .luminous),
-    Mystery(number: 5, title: "Eucaristía", description: "Institución de la Eucaristía", group: .luminous)
+    Mystery(number: 1, title: "El Bautismo", description: "El Bautismo de Jesús en el Jordán", group: .luminous),
+    Mystery(number: 2, title: "Boda de Caná", description: "Las bodas de Caná", group: .luminous),
+    Mystery(number: 3, title: "La Predicación", description: "El anuncio del reino de Dios", group: .luminous),
+    Mystery(number: 4, title: "La Transfiguración", description: "Transfiguración de Jesús en el Monte Tabor", group: .luminous),
+    Mystery(number: 5, title: "La Eucaristía", description: "Institución de la Eucaristía", group: .luminous)
 ]
 
 func getMysteries(for group: MysteryGroup) -> [Mystery] {
