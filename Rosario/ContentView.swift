@@ -1,4 +1,3 @@
-
 //
 //  ContentView.swift
 //  RosarioApp
@@ -105,7 +104,7 @@ struct HomeTabView: View {
     var body: some View {
         NavigationStack {
             ScrollView { // ScrollView añadido para pantallas pequeñas
-                VStack(spacing: 15) {
+                VStack(spacing: 5) {
                     // Header
                     VStack(spacing: 10) {
                         Text("Hoy se rezan los misterios")
@@ -127,7 +126,7 @@ struct HomeTabView: View {
                     .cornerRadius(12)
                     
                     // Lista de misterios
-                    VStack(spacing: 5) {
+                    VStack(spacing: 1) {
                         let mysteries = getMysteries(for: mysteryToday)
                         ForEach(mysteries) { mystery in
                             HStack {
@@ -135,7 +134,7 @@ struct HomeTabView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(.brown)
                                 
-                                VStack(alignment: .leading, spacing: 3) {
+                                VStack(alignment: .leading, spacing: 2) {
                                     Text(mystery.title)
                                         .fontWeight(.semibold)
                                         .foregroundColor(.brown)
@@ -160,26 +159,30 @@ struct HomeTabView: View {
                         let isResponsorial = prayerMode == "responsorial"
                         onPlayComplete(isResponsorial)
                     }) {
-                        HStack {
+                        HStack(spacing: 12) {
                             Image(systemName: "play.fill")
+                                .font(.system(size: 20, weight: .bold))
                             Text("Empezar Santo Rosario")
+                                  .font(.custom("New York", size: 25))
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color(red: 0.62, green: 0.42, blue: 0.25))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
                     }
+                    .frame(minHeight: 64)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal)
+                    .background(Color(red: 0.62, green: 0.42, blue: 0.25))
+                    .foregroundColor(.white)
+                    .cornerRadius(14)
+                    .shadow(radius: 20)
                 }
                 .padding()
             }
             .navigationTitle("Santo Rosario")
         }
     }
-}
-// MARK: - Player View
+}// MARK: - Player View
 struct PlayerView: View {
     @ObservedObject var viewModel: RosarioViewModel
+    @State private var showNavigationSheet = false
     
     private func isCurrentSection(_ sectionIndex: Int) -> Bool {
         return viewModel.currentSegmentIndex >= sectionIndex &&
@@ -188,51 +191,75 @@ struct PlayerView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: 0) {
                 
-                // 1. Progreso visual (cuentas) - ARRIBA
-                RosaryBeadProgress(
-                    current: viewModel.currentSegmentIndex,
-                    total: viewModel.currentSequence.enabledSegments().count
-                )
-                
-                // 2. Texto de la oración actual - MEDIO SUPERIOR
+                // --- BLOQUE SUPERIOR ---
                 VStack(spacing: 12) {
-                    Text(viewModel.currentText)
-                        .font(.title2) // Un poco más grande para leer mejor
-                        .fontWeight(.medium)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white.opacity(0.7))
-                        .cornerRadius(12)
-                        .shadow(radius: 2)
-                    
-                    if let error = viewModel.errorMessage {
-                        Text("Error: \(error)")
-                            .font(.caption)
-                            .foregroundColor(.red)
+                    // 1. Progreso visual
+                    RosaryBeadProgress(
+                        current: viewModel.currentSegmentIndex,
+                        total: viewModel.currentSequence.enabledSegments().count
+                    )
+                    .padding(.top)
+
+                    // 2. Bloque de Texto Estilizado (Igual al botón de inicio)
+                    VStack {
+                        Text(viewModel.currentText)
+                            .font(.custom("New York", size: 25)) // Fuente solicitada
+                            .fontWeight(.medium)
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.white) // Letra blanca
                             .padding()
                     }
-                }
-                .padding(.horizontal)
-                
-                // 3. IMAGEN DINÁMICA - JUSTO DEBAJO DEL TEXTO
-                // ----------------------------------------------------
-                Image(viewModel.currentImageName) // Usa el nombre calculado
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxHeight: 280) // Ajusta altura máxima para que quepa bien
-                    .cornerRadius(16)
-                    .shadow(radius: 8) // Sombra suave para darle profundidad
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 80) // Asegura un tamaño mínimo elegante
+                    .background(Color(red: 0.62, green: 0.42, blue: 0.25)) // El color marrón exacto
+                    .cornerRadius(14) // Radio solicitado
+                    .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 10) // Sombra profunda
                     .padding(.horizontal)
-                    .id(viewModel.currentImageName) // ID para animar el cambio
-                    .transition(.opacity.animation(.easeInOut(duration: 0.5)))
-                // ----------------------------------------------------
-                
+
+                    // Error o Indicador de Ave María
+                    VStack(spacing: 8) {
+                        if let error = viewModel.errorMessage {
+                            Text("Error: \(error)")
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                        
+                        if let segment = (viewModel.currentSegmentIndex < viewModel.currentSequence.enabledSegments().count) ? viewModel.currentSequence.enabledSegments()[viewModel.currentSegmentIndex] : nil,
+                           segment.type == .hailMary,
+                           let number = segment.mysteryNumber, let group = segment.mysteryGroup {
+                            
+                            let hailsInMystery = viewModel.currentSequence.enabledSegments().filter { $0.type == .hailMary && $0.mysteryNumber == number && $0.mysteryGroup == group }
+                            
+                            if let idx = hailsInMystery.firstIndex(where: { $0.id == segment.id }) {
+                                Text("Ave María \(idx + 1) de \(hailsInMystery.count)")
+                                    .font(.system(.subheadline, design: .serif))
+                                    .foregroundColor(.brown)
+                                    .italic()
+                            }
+                        }
+                    }
+                }
+
+                // --- ESPACIADO DINÁMICO ---
                 Spacer()
                 
-                // 4. Controles de reproducción - ABAJO
+                // 3. IMAGEN DINÁMICA (CENTRAL)
+                Image(viewModel.currentImageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 280)
+                    .cornerRadius(16)
+                    .shadow(radius: 8)
+                    .padding(.horizontal)
+                    .id(viewModel.currentImageName)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.5)))
+                
+                Spacer()
+                // --------------------------
+
+                // 4. CONTROLES DE REPRODUCCIÓN (ABAJO)
                 VStack(spacing: 16) {
                     HStack(spacing: 40) {
                         Button(action: { viewModel.previousSegment() }) {
@@ -263,26 +290,44 @@ struct PlayerView: View {
                 }
                 .padding(.bottom, 30)
             }
-            .padding(.top)
             .toolbar {
-                ToolbarItem(placement: .primaryAction) { // .automatic o .primaryAction para iOS/macOS
-                    Menu {
-                        Text("Ir a sección:")
-                        ForEach(viewModel.navigationPoints, id: \.id) { point in
-                            Button {
-                                viewModel.jumpTo(index: point.index)
-                            } label: {
-                                if isCurrentSection(point.index) {
-                                    Label(point.title, systemImage: "checkmark")
-                                } else {
-                                    Text(point.title)
-                                }
-                            }
-                        }
-                    } label: {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: { showNavigationSheet = true }) {
                         Image(systemName: "list.bullet.circle.fill")
                             .font(.title2)
                             .foregroundColor(.brown)
+                    }
+                }
+            }
+            .sheet(isPresented: $showNavigationSheet) {
+                NavigationStack {
+                    List {
+                        ForEach(viewModel.navigationPoints, id: \.id) { point in
+                            Button(action: {
+                                viewModel.jumpTo(index: point.index)
+                                showNavigationSheet = false
+                            }) {
+                                HStack {
+                                    Text(point.title)
+                                        .foregroundColor(.brown)
+                                    
+                                    Spacer()
+                                    
+                                    if isCurrentSection(point.index) {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(.green)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .navigationTitle("Ir a sección")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Cerrar") {
+                                showNavigationSheet = false
+                            }
+                        }
                     }
                 }
             }
@@ -337,6 +382,9 @@ struct EditorView: View {
                     Toggle("Oraciones Finales", isOn: $editorViewModel.config.includeFinalPrayers)
                     
                     Toggle("Peticiones Finales", isOn: $editorViewModel.config.includePetitions)
+                    
+                    // Agregado: Toggle para incluir Salve después de los Misterios
+                    Toggle("Salve (después de los Misterios)", isOn: $editorViewModel.config.includeSalve)
                 }
                 
                 // Acciones
@@ -423,6 +471,9 @@ struct SettingsView: View {
     @AppStorage("enableVibration") var enableVibration: Bool = true
     @AppStorage("prayerMode") var prayerMode: String = "complete"
     
+    // Nueva propiedad para la velocidad (por defecto 1.0)
+    @AppStorage("playbackRate") var playbackRate: Double = 1.0
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -430,6 +481,21 @@ struct SettingsView: View {
                     Picker("Tipo de oración", selection: $prayerMode) {
                         Text("Modo Completo").tag("complete")
                         Text("Modo Responsorial").tag("responsorial")
+                    }
+                }
+                
+                // NUEVA SECCIÓN DE VELOCIDAD
+                Section(header: Text("Velocidad de audio")) {
+                    VStack {
+                        HStack {
+                            Text("Velocidad")
+                            Spacer()
+                            Text("\(playbackRate, specifier: "%.1f")x")
+                                .bold()
+                                .foregroundColor(Color(red: 0.62, green: 0.42, blue: 0.25))
+                        }
+                        Slider(value: $playbackRate, in: 0.5...2.0, step: 0.1)
+                            .tint(Color(red: 0.62, green: 0.42, blue: 0.25)) // Tu color marrón
                     }
                 }
                 
@@ -452,3 +518,4 @@ struct SettingsView: View {
 #Preview {
     ContentView()
 }
+

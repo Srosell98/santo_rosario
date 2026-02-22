@@ -80,6 +80,7 @@ struct RosarioConfiguration: Codable {
     var includeCredo: Bool = false
     var includeVisita: Bool = true         // 3x(PN, Ave, Gloria) + comunión
     var includeIntroPrayers: Bool = true    //PN + 3 Aves + Gloria
+    
     // Sección Central (Fija, no editable)
     
     // Sección Final
@@ -87,6 +88,7 @@ struct RosarioConfiguration: Codable {
     var includeLitanies: Bool = true        // Letanías normales
     var includeFinalPrayers: Bool = true   // Oraciones finales extra (lauretanas)
     var includePetitions: Bool = true       // Iglesia, Obispo, Almas
+    var includeSalve: Bool = false           // Salve (nuevo)
 }
 
 // MARK: - Structs
@@ -172,35 +174,35 @@ struct AppSettings: Codable {
 // MARK: - Mystery Data
 
 let mysteriesJoyful: [Mystery] = [
-    Mystery(number: 1, title: "La Anunciación", description: "Anunciación del Ángel Gabriel a María", group: .joyful),
-    Mystery(number: 2, title: "La Visitación", description: "Visitación de María a su prima Isabel", group: .joyful),
-    Mystery(number: 3, title: "El Nacimiento", description: "Nacimiento de Nuestro Señor Jesucristo", group: .joyful),
-    Mystery(number: 4, title: "La Presentación", description: "Presentación de Jesús en el Templo", group: .joyful),
-    Mystery(number: 5, title: "El Hallazgo", description: "El Niño Jesús perdido y hallado en el Templo", group: .joyful)
+    Mystery(number: 1, title: "La Anunciación", description: "La Anunciación del Ángel Gabriel", group: .joyful),
+    Mystery(number: 2, title: "La Visitación", description: "La Visitación de María a su prima Isabel", group: .joyful),
+    Mystery(number: 3, title: "El Nacimiento", description: "La Nacimiento de Nuestro Señor Jesucristo", group: .joyful),
+    Mystery(number: 4, title: "La Presentación", description: "La Presentación de Jesús en el Templo", group: .joyful),
+    Mystery(number: 5, title: "El Niño perdido", description: "La El Niño Jesús perdido y hallado en el Templo", group: .joyful)
 ]
 
 let mysteriesSorrowful: [Mystery] = [
-    Mystery(number: 1, title: "La Oración en el Huerto", description: "Oración de Jesús en el Huerto", group: .sorrowful),
+    Mystery(number: 1, title: "La Oración en el Huerto", description: "La Oración de Jesús en el Huerto", group: .sorrowful),
     Mystery(number: 2, title: "La flagelación", description: "La flagelación de Nuestro Señor", group: .sorrowful),
     Mystery(number: 3, title: "La Coronación de Espinas", description: "La Coronación de espinas", group: .sorrowful),
     Mystery(number: 4, title: "Camino del Calvario", description: "Jesús carga con la cruz a cuestas", group: .sorrowful),
-    Mystery(number: 5, title: "La Crucifixión", description: "Crucifixión y muerte de Nuestro Señor ", group: .sorrowful)
+    Mystery(number: 5, title: "La Crucifixión", description: "Crucifixión y Muerte de Nuestro Señor ", group: .sorrowful)
 ]
 
 let mysteriesGlorious: [Mystery] = [
-    Mystery(number: 1, title: "La Resurrección", description: "Resurrección de Nuestro Señor Jesucristo", group: .glorious),
-    Mystery(number: 2, title: "La Ascensión", description: "Ascensión de Nuestro Señor Jesucristo", group: .glorious),
-    Mystery(number: 3, title: "Venida del Espíritu Santo", description: "Venida del Espíritu Santo", group: .glorious),
-    Mystery(number: 4, title: "La Asunción", description: "Asunción de Nuestra Señora María", group: .glorious),
-    Mystery(number: 5, title: "La Coronación", description: "Coronación de Nuestra Señora María", group: .glorious)
+    Mystery(number: 1, title: "La Resurrección", description: "La Resurrección de Nuestro Señor Jesucristo", group: .glorious),
+    Mystery(number: 2, title: "La Ascensión", description: "La Ascensión de Nuestro Señor Jesucristo", group: .glorious),
+    Mystery(number: 3, title: "La Venida del Espíritu Santo", description: "La Venida del Espíritu Santo", group: .glorious),
+    Mystery(number: 4, title: "La Asunción", description: "La Asunción de Nuestra Señora", group: .glorious),
+    Mystery(number: 5, title: "La Coronación", description: "La Coronación de Nuestra Señora como Reina y Señora de Todo lo Creado", group: .glorious)
 ]
 
 let mysteriesLuminous: [Mystery] = [
     Mystery(number: 1, title: "El Bautismo", description: "El Bautismo de Jesús en el Jordán", group: .luminous),
     Mystery(number: 2, title: "Boda de Caná", description: "Las bodas de Caná", group: .luminous),
     Mystery(number: 3, title: "La Predicación", description: "El anuncio del reino de Dios", group: .luminous),
-    Mystery(number: 4, title: "La Transfiguración", description: "Transfiguración de Jesús en el Monte Tabor", group: .luminous),
-    Mystery(number: 5, title: "La Eucaristía", description: "Institución de la Eucaristía", group: .luminous)
+    Mystery(number: 4, title: "La Transfiguración", description: "La Transfiguración de Jesús en el Monte Tabor", group: .luminous),
+    Mystery(number: 5, title: "La Eucaristía", description: "La Institución de la Eucaristía", group: .luminous)
 ]
 
 func getMysteries(for group: MysteryGroup) -> [Mystery] {
@@ -364,8 +366,10 @@ func buildRosarioSequence(config: RosarioConfiguration, mysteryGroup: MysteryGro
         order += 1
     }
     
-    // Salve (Siempre presente tras misterios)
-    segments.append(AudioSegment(type: .salve, title: "Salve", order: order, audioIntroFile: "salve.m4a"))
+    // Salve (Siempre presente tras misterios) SOLO SI config.includeSalve ES TRUE
+    if config.includeSalve {
+        segments.append(AudioSegment(type: .salve, title: "Salve", order: order, audioIntroFile: "salve.m4a"))
+    }
     order += 1
     
     // ---------------------------------------------------------
@@ -478,3 +482,4 @@ func buildDefaultRosarioSequence(mysteryGroup: MysteryGroup) -> RosarioSequence 
     )
     return buildRosarioSequence(config: defaultConfig, mysteryGroup: mysteryGroup)
 }
+

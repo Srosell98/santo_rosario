@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import AVFoundation
+import MediaPlayer
 
 // Estructura para identificar los puntos de salto en el menú
 struct NavigationPoint: Identifiable, Hashable {
@@ -47,7 +48,48 @@ class RosarioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         self.currentSequence = sequence
         self.settings = settings
         super.init()
-        updateCurrentState() // Unificamos lógica de actualizar texto e imagen
+        setupAudioSession() // Configuramos el audio para modo silencio y bloqueo
+        setupRemoteCommands()
+        updateCurrentState()
+    }
+
+    // NUEVO MÉTODO PRIVADO (Añádelo al final de la clase o en la sección de Private Methods)
+    private func setupAudioSession() {
+        do {
+            // .playback indica que el audio es esencial y no debe silenciarse con el interruptor lateral
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Error al configurar AVAudioSession: \(error.localizedDescription)")
+        }
+    }
+    
+    private func setupRemoteCommands() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+
+        // Comando Play
+        commandCenter.playCommand.addTarget { [weak self] _ in
+            self?.resumeRosario()
+            return .success
+        }
+
+        // Comando Pausa
+        commandCenter.pauseCommand.addTarget { [weak self] _ in
+            self?.pauseRosario()
+            return .success
+        }
+
+        // Comando Siguiente
+        commandCenter.nextTrackCommand.addTarget { [weak self] _ in
+            self?.nextSegment()
+            return .success
+        }
+
+        // Comando Anterior
+        commandCenter.previousTrackCommand.addTarget { [weak self] _ in
+            self?.previousSegment()
+            return .success
+        }
     }
 
     // MARK: - Public Methods
@@ -204,14 +246,45 @@ class RosarioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         let segment = enabledSegments[currentSegmentIndex]
         
         // 1. Actualizar Texto
-        currentText = "\(segment.type.rawValue)\n\(segment.title)"
+        if segment.type.rawValue == segment.title {
+            currentText = segment.title
+        } else {
+            currentText = "\(segment.type.rawValue)\n\(segment.title)"
+        }
+        
         if let mysteryNumber = segment.mysteryNumber,
            let group = segment.mysteryGroup {
-            currentText = "Misterio \(mysteryNumber) (\(group.rawValue))\n\(segment.title)"
+            let mysteries = getMysteries(for: group)
+            if let mystery = mysteries.first(where: { $0.number == mysteryNumber }) {
+                currentText = mystery.description
+            }
         }
         
         // 2. Actualizar Imagen
         currentImageName = determineImageName(for: segment)
+        
+        // 3. NOTIFICAR AL SISTEMA (Añade esta línea)
+        updateNowPlayingInfo()
+    }
+    
+    private func updateNowPlayingInfo() {
+        var nowPlayingInfo = [String: Any]()
+        
+        // Título: La oración actual o descripción del misterio
+        nowPlayingInfo[MPMediaItemPropertyTitle] = currentText
+        
+        // Subtítulo: Nombre de la App / Artista
+        nowPlayingInfo[MPMediaItemPropertyArtist] = "Santo Rosario"
+        
+        // Imagen: La misma que estás mostrando en la App
+        if let image = UIImage(named: currentImageName) {
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in
+                return image
+            }
+        }
+        
+        // Informar al centro de control
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
     
     /// Lógica para decidir qué imagen mostrar
@@ -309,6 +382,19 @@ class RosarioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
             audioPlayer?.volume = volume
+            
+            // --- CONFIGURACIÓN DE VELOCIDAD ---
+            // 1. Habilitamos explícitamente el cambio de ritmo
+            audioPlayer?.enableRate = true
+            
+            // 2. Recuperamos el valor guardado en AppStorage/UserDefaults
+            // Usamos "playbackRate" que es el nombre que pusimos en SettingsView
+            let savedRate = UserDefaults.standard.double(forKey: "playbackRate")
+            
+            // 3. Aplicamos la velocidad (si es 0 por algún error, ponemos 1.0 por defecto)
+            audioPlayer?.rate = Float(savedRate > 0 ? savedRate : 1.0)
+            // ----------------------------------
+
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
         } catch {
@@ -324,7 +410,7 @@ class RosarioViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
         phase = .none
         pendingReplyFile = nil
         audioPlayer?.stop()
-        currentText = "Rosario completado. ¡Gloria a Dios!"
+        currentText = "Rosario completado."
         currentImageName = "img_final" // Mostrar imagen final al terminar
     }
 
